@@ -1,19 +1,21 @@
 #ifndef BPlusTree_H
 #define BPlusTree_H
 
+#include "../dobleenlazada/List.h"
+#include <vector>
 #include <iostream>
 
 template <typename T>
-struct Node {
+struct TreeNode {
     bool is_leaf;
     std::size_t degree; // maximum number of children
     std::size_t size; // current number of item
     T* item;
-    Node<T>** children;
-    Node<T>* parent;
+    TreeNode<T>** children;
+    TreeNode<T>* parent;
 
 public:
-    Node(std::size_t _degree) {// Constructor
+    TreeNode(std::size_t _degree) {// Constructor
         this->is_leaf = false;
         this->degree = _degree;
         this->size = 0;
@@ -24,7 +26,7 @@ public:
         }
         this->item = _item;
 
-        Node<T>** _children = new Node<T>*[degree];
+        TreeNode<T>** _children = new TreeNode<T>*[degree];
         for(int i=0; i<degree; i++){
             _children[i] = nullptr;
         }
@@ -37,28 +39,35 @@ public:
 
 template <typename T>
 class BPlusTree {
-    Node<T>* root;
+    TreeNode<T>* root;
     std::size_t degree;
+    List<T>* listaNodos;
+    
 
 public:
     BPlusTree(std::size_t _degree) {// Constructor
         this->root = nullptr;
         this->degree = _degree;
+        listaNodos = new List<T>();
     }
     ~BPlusTree() { // Destructor
         clear(this->root);
     }
 
-    Node<T>* getroot(){
+    List<T>* getListaNodos(){
+        return listaNodos;
+    }
+
+    TreeNode<T>* getroot(){
         return this->root;
     }
 
-    Node<T>* BPlusTreeSearch(Node<T>* node, T key){
+    TreeNode<T>* BPlusTreeSearch(TreeNode<T>* node, T key){
         if(node == nullptr) { // if root is null, return nullptr
             return nullptr;
         }
         else{
-            Node<T>* cursor = node; // cursor finding key
+            TreeNode<T>* cursor = node; // cursor finding key
 
             while(!cursor->is_leaf){ // until cusor pointer arrive leaf
                 for(int i=0; i<cursor->size; i++){ //in this index node, find what we want key
@@ -83,12 +92,12 @@ public:
             return nullptr;
         }
     }
-    Node<T>* BPlusTreeRangeSearch(Node<T>* node, T key){
+    TreeNode<T>* BPlusTreeRangeSearch(TreeNode<T>* node, T key){
         if(node == nullptr) { // if root is null, return nullptr
             return nullptr;
         }
         else{
-            Node<T>* cursor = node; // cursor finding key
+            TreeNode<T>* cursor = node; // cursor finding key
 
             while(!cursor->is_leaf){ // until cusor pointer arrive leaf
                 for(int i=0; i<cursor->size; i++){ //in this index node, find what we want key
@@ -108,8 +117,8 @@ public:
     int range_search(T start, T end, T* result_data, int arr_length) {
         int index=0;
 
-        Node<T>* start_node = BPlusTreeRangeSearch(this->root,start);
-        Node<T>* cursor = start_node;
+        TreeNode<T>* start_node = BPlusTreeRangeSearch(this->root,start);
+        TreeNode<T>* cursor = start_node;
         T temp= cursor->item[0];
 
         while(temp<=end){
@@ -166,14 +175,14 @@ public:
 
         return arr;
     }
-    Node<T>** child_insert(Node<T>** child_arr, Node<T>*child,int len,int index){
+    TreeNode<T>** child_insert(TreeNode<T>** child_arr, TreeNode<T>*child,int len,int index){
         for(int i= len; i > index; i--){
             child_arr[i] = child_arr[i - 1];
         }
         child_arr[index] = child;
         return child_arr;
     }
-    Node<T>* child_item_insert(Node<T>* node, T data, Node<T>* child){
+    TreeNode<T>* child_item_insert(TreeNode<T>* node, T data, TreeNode<T>* child){
         int item_index=0;
         int child_index=0;
         for(int i=0; i< node->size; i++){
@@ -200,9 +209,9 @@ public:
 
         return node;
     }
-    void InsertPar(Node<T>* par,Node<T>* child, T data){
+    void InsertPar(TreeNode<T>* par,TreeNode<T>* child, T data){
         //overflow check
-        Node<T>* cursor = par;
+        TreeNode<T>* cursor = par;
         if(cursor->size < this->degree-1){//not overflow, just insert in the correct position
             //insert item, child, and reallocate
             cursor = child_item_insert(cursor,data,child);
@@ -210,7 +219,7 @@ public:
         }
         else{//overflow
             //make new node
-            auto* Newnode = new Node<T>(this->degree);
+            auto* Newnode = new TreeNode<T>(this->degree);
             Newnode->parent = cursor->parent;
 
             //copy item
@@ -220,7 +229,7 @@ public:
             }
             item_copy = item_insert(item_copy,data,cursor->size);
 
-            auto** child_copy = new Node<T>*[cursor->size+2];
+            auto** child_copy = new TreeNode<T>*[cursor->size+2];
             for(int i=0; i<cursor->size+1;i++){
                 child_copy[i] = cursor->children[i];
             }
@@ -258,7 +267,7 @@ public:
 
             //parent check
             if(cursor->parent == nullptr){//if there are no parent node(root case)
-                auto* Newparent = new Node<T>(this->degree);
+                auto* Newparent = new TreeNode<T>(this->degree);
                 cursor->parent = Newparent;
                 Newnode->parent = Newparent;
 
@@ -279,14 +288,15 @@ public:
     }
     void insert(T data) {
         if(this->root == nullptr){ //if the tree is empty
-            this->root = new Node<T>(this->degree);
+            this->root = new TreeNode<T>(this->degree);
             this->root->is_leaf = true;
             this->root->item[0] = data;
             this->root->size = 1; //
+            this->listaNodos->add(new T(data));
         }
         else{ //if the tree has at least one node
-            Node<T>* cursor = this->root;
-
+            TreeNode<T>* cursor = this->root;
+            this->listaNodos->add(new T(data));
             //move to leaf node
             cursor = BPlusTreeRangeSearch(cursor, data);
 
@@ -301,7 +311,8 @@ public:
             }
             else{//overflow case
                 //make new node
-                auto* Newnode = new Node<T>(this->degree);
+                
+                auto* Newnode = new TreeNode<T>(this->degree);
                 Newnode->is_leaf = true;
                 Newnode->parent = cursor->parent;
 
@@ -340,7 +351,7 @@ public:
                 T paritem = Newnode->item[0];
 
                 if(cursor->parent == nullptr){//if there are no parent node(root case)
-                    auto* Newparent = new Node<T>(this->degree);
+                    auto* Newparent = new TreeNode<T>(this->degree);
                     cursor->parent = Newparent;
                     Newnode->parent = Newparent;
 
@@ -361,7 +372,7 @@ public:
 
     void remove(T data) { // Remove an item from the tree.
         //make cursor
-        Node<T>* cursor = this->root;
+        TreeNode<T>* cursor = this->root;
 
         //move to leaf node
         cursor = BPlusTreeRangeSearch(cursor,data);
@@ -414,7 +425,7 @@ public:
         if(cursor->size < degree/2){//underflow case
 
             if(left >= 0){// left_sibiling exists
-                Node<T>* leftsibling= cursor->parent->children[left];
+                TreeNode<T>* leftsibling= cursor->parent->children[left];
 
                 if(leftsibling->size > degree/2){ //if data number is enough to use this node
                     T* temp = new T[cursor->size+1];
@@ -449,7 +460,7 @@ public:
                 }
             }
             if(right <= cursor->parent->size){// right_sibiling exists
-                Node<T>* rightsibling = cursor->parent->children[right];
+                TreeNode<T>* rightsibling = cursor->parent->children[right];
 
                 if(rightsibling->size >degree/2){//if data number is enough to use this node
                     T* temp = new T[cursor->size+1];
@@ -490,7 +501,7 @@ public:
             //we have to merge step
 
             if(left>=0){ // left_sibling exists
-                Node<T>* leftsibling = cursor->parent->children[left];
+                TreeNode<T>* leftsibling = cursor->parent->children[left];
 
                 //merge two leaf node
                 for(int i=0; i<cursor->size; i++){
@@ -517,7 +528,7 @@ public:
 
             }
             if(right<=cursor->parent->size){ // right_sibiling exists
-                Node<T>* rightsibling = cursor->parent->children[right];
+                TreeNode<T>* rightsibling = cursor->parent->children[right];
 
                 //merge two leaf node
                 for(int i=0; i<rightsibling->size; i++){
@@ -550,9 +561,9 @@ public:
         }
     }
 
-    void Removepar(Node<T>* node, int index, Node<T>* par){
-        Node<T>* remover = node;
-        Node<T>* cursor = par;
+    void Removepar(TreeNode<T>* node, int index, TreeNode<T>* par){
+        TreeNode<T>* remover = node;
+        TreeNode<T>* cursor = par;
         T target = cursor->item[index];
 
         //if cursor is root, and there are no more data -> child node is to be root!
@@ -617,7 +628,7 @@ public:
             int right=sib_index+1;
 
             if(left >= 0){// left_sibiling exists
-                Node<T>* leftsibling= cursor->parent->children[left];
+                TreeNode<T>* leftsibling= cursor->parent->children[left];
 
                 if(leftsibling->size > degree/2){ //if data number is enough to use this node
                     T* temp = new T[cursor->size+1];
@@ -635,7 +646,7 @@ public:
                     cursor->parent->item[left] = leftsibling->item[leftsibling->size-1];
                     delete[] temp;
 
-                    Node<T>** child_temp = new Node<T>*[cursor->size+2];
+                    TreeNode<T>** child_temp = new TreeNode<T>*[cursor->size+2];
                     //copy child node
                     for(int i=0; i<cursor->size+1; i++){
                         child_temp[i]=cursor->children[i];
@@ -657,7 +668,7 @@ public:
             }
 
             if(right <= cursor->parent->size){// right_sibiling exists
-                Node<T>* rightsibling = cursor->parent->children[right];
+                TreeNode<T>* rightsibling = cursor->parent->children[right];
 
                 if(rightsibling->size > degree/2){//if data number is enough to use this node
                     T* temp = new T[cursor->size+1];
@@ -692,7 +703,7 @@ public:
             //if sibling is not enought to use their data
             //we have to merge step
             if(left>=0){ // left_sibling exists
-                Node<T>* leftsibling = cursor->parent->children[left];
+                TreeNode<T>* leftsibling = cursor->parent->children[left];
 
                 leftsibling->item[leftsibling->size] = cursor->parent->item[left];
                 //merge two leaf node
@@ -713,7 +724,7 @@ public:
 
             }
             if(right<=cursor->parent->size){ // right_sibiling exists
-                Node<T>* rightsibling = cursor->parent->children[right];
+                TreeNode<T>* rightsibling = cursor->parent->children[right];
 
                 cursor->item[cursor->size] = cursor->parent->item[right-1];
                 //merge two leaf node
@@ -739,7 +750,7 @@ public:
         }
     }
 
-    void clear(Node<T>* cursor){
+    void clear(TreeNode<T>* cursor){
         if(cursor != nullptr){
             if(!cursor->is_leaf){
                 for(int i=0; i <= cursor->size; i++){
@@ -749,12 +760,13 @@ public:
             delete[] cursor->item;
             delete[] cursor->children;
             delete cursor;
+            listaNodos = new List<T>();
         }
     }
     void bpt_print(){
         print(this->root);
     }
-    void print(Node<T>* cursor) {
+    void print(TreeNode<T>* cursor) {
         // You must NOT edit this function.
         if (cursor != NULL) {
             for (int i = 0; i < cursor->size; ++i) {
@@ -769,6 +781,9 @@ public:
             }
         }
     }
+
+   
+
 };
 
 #endif

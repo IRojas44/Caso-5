@@ -1,5 +1,7 @@
 
 #include "bPlusTree/BPlusTree.h"
+#include "dobleenlazada/List.h"
+#include "grafos/grafo.h"
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -55,20 +57,46 @@ int size(string *arr){
 
 void matching(string oferta, string demanda){
     BPlusTree<string> bTree(6);
+    Grafo grafoRelaciones(true);
     string *ofertaRecortada = extraerFrase(oferta);
+    int registroOfertas=0;
+    int registroDemandas=0;
     for (int i = 0; i < size(ofertaRecortada); i++){
-        bTree.insert(ofertaRecortada[i]);
+        if(ofertaRecortada[i].length()>2){
+            bTree.insert(ofertaRecortada[i]);
+            registroOfertas++;
+        }
+        
     }
     string *demandaRecortada = extraerFrase(demanda);
     for (int i = 0; i < size(demandaRecortada); i++){
-        bTree.insert(demandaRecortada[i]);
+        if(demandaRecortada[i].length()>2){
+            bTree.insert(demandaRecortada[i]);
+            registroDemandas++;
+        }
+        
     }
-    
+    List<string>* listaNodos = bTree.getListaNodos();
+    int repeticiones = 0;
+    for (int i = 0; i < registroOfertas; i++){
+        for (int j = registroOfertas; j<listaNodos->getSize(); j++){
+            if(*listaNodos->find(i)==*listaNodos->find(j)&&i!=j){
+               
+                    repeticiones++;
+                    cout<<"Repeticion con "<<*listaNodos->find(i)<<" del indice "<<i<<" con "<<*listaNodos->find(j)<<" del indice "<<j<<endl;
+                
+            }
+        }
+    }
+    cout<<"Hay "<<repeticiones<<" repeticiones/matches";
+    if(repeticiones>=3){
+
+    }
 }
 
 int main() {
-    string oferta = "Ofrecemos mano de obra y materiales para la construccion de casas, edificios o proyectos";
-    string demanda = "Necesitamos trabajadores experimentados en costruccion, tapizado y pintura de casas y oficinas en la ciudad de San Jose";
+    string oferta = "Ofrecemos mano de obra y materiales para la construccion de casas, oficinas, edificios o proyectos dentro de la GAM. Hacemos buenas casas";
+    string demanda = "Necesitamos trabajadores mano experimentados y materiales de construccion, tapizado y pintura de casas y oficinas en la ciudad de San Jose";
     //extraerFrase(frase);
     //cout << extraerFrase(frase)<<endl;
     string *palabrasRecortadas = extraerFrase(oferta);

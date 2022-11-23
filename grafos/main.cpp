@@ -1,88 +1,139 @@
 #include <iostream>
-#include "grafo.h"
-#include "Persona.h"
-#include "WebApp.h"
-#include "NodoGrafo.h"
-#include "INodo.h"
-#include <vector>
 
-using namespace std;
+#include <cstdlib>
+#include <string>
+
+#include "graph.h"
 
 int main() {
+  Graph g;
+  string sname;
+  int id1, id2, w;
+  int option;
+  bool check;
 
-    // Ejercicio #1: 
-    Grafo grafo1(true);
+  do {
+    cout << "What operation do you want to perform? " <<
+      " Select Option number. Enter 0 to exit." << endl;
+    cout << "1. Add Vertex" << endl;
+    cout << "2. Update Vertex" << endl;
+    cout << "3. Delete Vertex" << endl;
+    cout << "4. Add Edge" << endl;
+    cout << "5. Update Edge" << endl;
+    cout << "6. Delete Edge" << endl;
+    cout << "7. Check if 2 Vertices are Neigbors" << endl;
+    cout << "8. Print All Neigbors of a Vertex" << endl;
+    cout << "9. Print Graph" << endl;
+    cout << "10. Clear Screen" << endl;
+    cout << "0. Exit Program" << endl;
 
-    Persona ana;
-    ana.setNombre("Ana");
+    cin >> option;
+    Vertex v1;
 
-    Persona juan;
-    juan.setNombre("Juan");
+    switch (option) {
+    case 0:
 
-    grafo1.addNode(&ana);
-    grafo1.addNode(&juan);
+      break;
 
-    grafo1.addArc(&ana, &juan);
+    case 1:
+      cout << "Add Vertex Operation -" << endl;
+      cout << "Enter State ID :";
+      cin >> id1;
+      cout << "Enter State Name :";
+      cin >> sname;
+      v1.setID(id1);
+      v1.setStateName(sname);
+      g.addVertex(v1);
 
-    cout << "Ejercio de recorrido en anchura testeando creacion de arcos" << endl;
+      break;
 
-    WebApp ig = WebApp(5, "IG");
-    WebApp twi = WebApp(10, "Twitter");
-    WebApp flu = WebApp(4, "Flutter");
-    WebApp of = WebApp(7, "Onlyfans");
-    WebApp face = WebApp(15, "Facebook");
-    WebApp allapps[] = {ig, twi, flu, of, face};
+    case 2:
+      cout << "Update Vertex Operation -" << endl;
+      cout << "Enter State ID of Vertex(State) to update :";
+      cin >> id1;
+      cout << "Enter State Name :";
+      cin >> sname;
+      g.updateVertex(id1, sname);
 
-    Grafo grafoApps(true);
+      break;
 
-    for(int i=0; i<5; i++) {
-        grafoApps.addNode(&allapps[i]);
+    case 3:
+      cout << "Delete Vertex Operation -" << endl;
+      cout << "Enter ID of Vertex(State) to Delete : ";
+      cin >> id1;
+      g.deleteVertexByID(id1);
+
+      break;
+
+    case 4:
+      cout << "Add Edge Operation -" << endl;
+      cout << "Enter ID of Source Vertex(State): ";
+      cin >> id1;
+      cout << "Enter ID of Destination Vertex(State): ";
+      cin >> id2;
+      cout << "Enter Weight of Edge: ";
+      cin >> w;
+      g.addEdgeByID(id1, id2, w);
+
+      break;
+
+    case 5:
+      cout << "Update Edge Operation -" << endl;
+      cout << "Enter ID of Source Vertex(State): ";
+      cin >> id1;
+      cout << "Enter ID of Destination Vertex(State): ";
+      cin >> id2;
+      cout << "Enter UPDATED Weight of Edge: ";
+      cin >> w;
+      g.updateEdgeByID(id1, id2, w);
+
+      break;
+
+    case 6:
+      cout << "Delete Edge Operation -" << endl;
+      cout << "Enter ID of Source Vertex(State): ";
+      cin >> id1;
+      cout << "Enter ID of Destination Vertex(State): ";
+      cin >> id2;
+      g.deleteEdgeByID(id1, id2);
+
+      break;
+
+    case 7:
+      cout << "Check if 2 Vertices are Neigbors -" << endl;
+      cout << "Enter ID of Source Vertex(State): ";
+      cin >> id1;
+      cout << "Enter ID of Destination Vertex(State): ";
+      cin >> id2;
+      check = g.checkIfEdgeExistByID(id1, id2);
+      if (check == true) {
+        cout << "Vertices are Neigbors (Edge exist)";
+      } else {
+        cout << "Vertices are NOT Neigbors (Edge does NOT exist)";
+      }
+
+      break;
+
+    case 8:
+      cout << "Print All Neigbors of a Vertex -" << endl;
+      cout << "Enter ID of Vertex(State) to fetch all Neigbors : ";
+      cin >> id1;
+      g.getAllNeigborsByID(id1);
+
+      break;
+
+    case 9:
+      cout << "Print Graph Operation -" << endl;
+      g.printGraph();
+
+      break;
+
+    default:
+      cout << "Enter Proper Option number " << endl;
     }
+    cout << endl;
 
-    NodoGrafo* origen = grafoApps.getNodo(5);
-    NodoGrafo* destino = grafoApps.getNodo(10);
+  } while (option != 0);
 
-    grafoApps.addArc(origen, destino, 3);
-    grafoApps.addArc(10, 15, 9);
-    grafoApps.addArc(&of, &ig, 1); 
-    grafoApps.addArc(7, 10, 4);
-    grafoApps.addArc(10, 7, 3);
-    grafoApps.addArc(7, 4, 6);
-    grafoApps.addArc(&face, &flu, 8);
-
-    vector<INodo*> result = grafoApps.broadPath(&ig);
-
-    for(int i=0; i<result.size(); i++) {
-        WebApp dato = *((WebApp*)(void*)result[i]);
-        cout << dato.getId() << " " << dato.getNombre() << endl;
-    }
-
-
-    /// segundo grafo
-
-    cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl;
-    Grafo grafoNoConexo(true);
-
-    for(int i=0; i<5; i++) {
-        grafoNoConexo.addNode(&allapps[i]);
-    }
-
-    grafoNoConexo.addArc(&flu, &ig, 3);
-    grafoNoConexo.addArc(&ig, &flu , 4);
-    grafoNoConexo.addArc(&ig, &of , 3);
-    grafoNoConexo.addArc(&twi, &of , 4);
-    grafoNoConexo.addArc(&twi, &face , 6);
-    grafoNoConexo.addArc(&face, &twi , 2);
-    grafoNoConexo.addArc(&face, &of , 1);
-
-    result.clear();
-    result = grafoNoConexo.broadPath(&face);
-
-    for(int i=0; i<result.size(); i++) {
-        WebApp dato = *((WebApp*)(void*)result[i]);
-        cout << dato.getId() << " " << dato.getNombre() << endl;
-    }
-
-    cout << "termino bien" << endl;
-
+  return 0;
 }
