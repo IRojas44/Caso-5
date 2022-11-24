@@ -168,8 +168,8 @@ int size(string *arr){
 void matching(){
     Contenful regs;
     vector<Registered*> allrecords = regs.getRecords();  
-    for (int i = 0; i < allrecords.size()-1; i++){
-        for (int j = 0; j < allrecords.size()-1; j++){
+    for (int i = 0; i < allrecords.size()-2; i++){
+        for (int j = 0; j < allrecords.size()-2; j++){
             if(allrecords.at(i)->getNickname()!=allrecords.at(j)->getNickname()){
                 if(allrecords.at(i)->getOffer()!=""||allrecords.at(i)->getOffer()!=" "){
                     if (allrecords.at(j)->getDemand()!=""||allrecords.at(j)->getDemand()!=" "){   
@@ -333,7 +333,7 @@ void matchesPorUsuariosHTML(Graph grafo, string nombreUsuario){
     htmlUsuario<<"</tr>"<<endl;
     int index = encontrarIndice(nombreUsuario);
     for (int i = 0; i < allrecords.size(); i++){
-        if(grafo.checkIfEdgeExistByID(index,i)&&index!=i){
+        if(grafo.checkIfEdgeExistByID(index,i)==true&&index!=i){
 
             htmlUsuario<<"<tr>"<<endl;
             htmlUsuario<<"<td>"<<"Oferta"<<"</td>"<<endl;
@@ -350,7 +350,7 @@ void matchesPorUsuariosHTML(Graph grafo, string nombreUsuario){
         }
     }
     for (int i = 0; i < allrecords.size(); i++){
-        if(grafo.checkIfEdgeExistByID(i,index)&&i!=index){
+        if(grafo.checkIfEdgeExistByID(i,index)==true&&i!=index){
             htmlUsuario<<"<tr>"<<endl;
             htmlUsuario<<"<td>"<<"Demanda"<<"</td>"<<endl;
             htmlUsuario<<"<td>"<<allrecords.at(i)->getNickname()<<"</td>"<<endl;
@@ -369,6 +369,19 @@ void matchesPorUsuariosHTML(Graph grafo, string nombreUsuario){
     htmlUsuario.close();
     cout<<"El archivo a sido creado con exito"<<endl;
 }
+//Top 10--------------------------------------------------------------------------------------------------------------------------------------------------------
+void top10(){
+    Contenful regs;
+    vector<Registered*> allrecords = regs.getRecords();
+    vector<Vertex> vertices= grafoRelaciones.getVertices();
+    ofstream htmlUsuario("top10.html");
+    htmlUsuario<<"<html><head><title>Top 10</title></head><body>"<<endl;
+    for (int i = 0; i < vertices.size(); i++){
+        //cout<<grafoRelaciones
+    }
+    
+}
+
 int main() {
     Contenful regs;
     int opcion;
@@ -381,7 +394,7 @@ int main() {
         cout << "1. Registrar Usuario" << endl;
         cout << "2. Crear Matches" << endl;
         cout << "3. Consultar Matches por Usuario" << endl;
-        cout << "4. Opcion 4" << endl;
+        cout << "4. Top 10" << endl;
         cout << "5. Ver todos los registros" << endl;
         cout << "6. Ver grafo de matches" << endl;
         cout << "0. SALIR" << endl;

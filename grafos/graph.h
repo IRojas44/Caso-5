@@ -96,6 +96,9 @@ class Graph {
   vector < Vertex > vertices;
 
   public:
+    vector<Vertex> getVertices(){
+        return vertices;
+    }
 
     bool checkIfVertexExistByID(int vid) {
       bool flag = false;
@@ -105,6 +108,10 @@ class Graph {
         }
       }
       return flag;
+    }
+
+    int numVertices(){
+        return vertices.size();
     }
 
   void addVertex(Vertex newVertex) {
