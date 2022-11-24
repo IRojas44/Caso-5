@@ -5,12 +5,10 @@
 #include <string>
 #include "bPlusTree/BPlusTree.h"
 #include "dobleenlazada/List.h"
-#include "grafos/grafo.h"
-#include "grafos/Persona.h"
-#include "grafos/NodoGrafo.h"
-#include "grafos/INodo.h"
 #include "grafos/graph.h"
-
+#include <fstream>
+#include <sstream>
+#include <bits/stdc++.h>
 using namespace std;
 
 Graph grafoRelaciones;
@@ -169,8 +167,7 @@ int size(string *arr){
 
 void matching(){
     Contenful regs;
-    vector<Registered*> allrecords = regs.getRecords();
-    
+    vector<Registered*> allrecords = regs.getRecords();  
     for (int i = 0; i < allrecords.size()-1; i++){
         for (int j = 0; j < allrecords.size()-1; j++){
             if(allrecords.at(i)->getNickname()!=allrecords.at(j)->getNickname()){
@@ -178,7 +175,6 @@ void matching(){
                     if (allrecords.at(j)->getDemand()!=""||allrecords.at(j)->getDemand()!=" "){   
                         BPlusTree<string> bTree(6);
                         int registroOfertas=0;
-                        //cout<<"Entro: "<<allrecords.at(i)->getOffer()<<endl;
                         string frase = aMinuscula(allrecords.at(i)->getOffer());
                         int cont=1;
                         for (int i=0;i<frase.length();i++){
@@ -186,7 +182,6 @@ void matching(){
                                 cont++;
                             }    
                         }
-                        //cout<<cont<<endl;
                         string palabras[cont];
                         string palabraAux="";
                         int index=0;
@@ -209,26 +204,18 @@ void matching(){
                             ofertaRecortada[j] = temp;
                         }
                         
-                        //cout<<"Recorto la oferta"<<endl;
-                        //cout<<"Entro: "<<allrecords.at(j)->getDemand()<<endl;
                         string frase2 = aMinuscula(allrecords.at(j)->getDemand());
-                        //cout<<"A minuscula de la demanda"<<endl;
-                        //cout<<frase2<<endl;
                         int cont2=1;
                         for (int i=0;i<frase2.length();i++){
                             if (frase2[i]==' '){
                                 cont2++;
                             }    
                         }
-                        //cout<<"Paso  el for"<<endl;
-                        //cout<<cont2<<endl;
                         string palabras2[cont2];
                         string palabraAux2="";
                         int index2=0;
-                        //cout<<"hola"<<endl;
                         for (int i=0;i<frase2.length();i++){
                             if (frase2[i]==' '){
-                                //cout<<i<<endl;
                                 palabras2[index2] = palabraAux2;
                                 index2++;
                                 palabraAux2="";
@@ -244,9 +231,7 @@ void matching(){
                         for(int j = 0; j<cont2; j++){
                             string temp2 = palabras2[j].substr(0,5);
                             demandaRecortada[j] = temp2;
-                        }
-
-                        //cout<<"Recorto la demanda"<<endl;    
+                        }   
                         for (int i = 0; i < size(ofertaRecortada); i++){
                             if(ofertaRecortada[i].length()>2){
                                 bTree.insert(ofertaRecortada[i]);
@@ -266,12 +251,13 @@ void matching(){
                         cout<<*listaNodos->find(i)<<endl;
                         }
                         */
-
+                        int peso=0;
                         int repeticiones = 0;
                         for (int i = 0; i < registroOfertas; i++){
                             for (int j = registroOfertas; j < listaNodos->getSize(); j++){
                                 if(*listaNodos->find(i)==*listaNodos->find(j)&&i!=j){  
                                     repeticiones++;
+                                    peso=peso+(10*repeticiones);
                                     //cout<<"Repeticion con "<<*listaNodos->find(i)<<" del indice "<<i<<" con "<<*listaNodos->find(j)<<" del indice "<<j<<endl;;                          
                                 }
                             }
@@ -289,7 +275,7 @@ void matching(){
                             destino.setStateName(allrecords.at(j)->getNickname());
                             grafoRelaciones.addVertex(destino);
                             grafoRelaciones.addEdgeByID(origen.getStateID(),destino.getStateID(),repeticiones);
-                            cout<<"Origen: "<<allrecords.at(i)->getNickname()<<" Id("<<i<<")"<<"--------->Destino: "<<allrecords.at(j)->getNickname()<<" Id("<<j<<")"<<endl;
+                            cout<<"Origen: "<<allrecords.at(i)->getNickname()<<" Id("<<i<<")"<<"--------->Destino: "<<allrecords.at(j)->getNickname()<<" Id("<<j<<") Peso: "<<peso<<endl;
                         
                         }
                     }    
@@ -298,32 +284,103 @@ void matching(){
         }
     }
 }
+//Matches de un Usuario--------------------------------------------------------------------------------------------------------------------------------------------------------
+int encontrarIndice(string nombreUsuario){
+    Contenful regs;
+    vector<Registered*> allrecords = regs.getRecords();
+    for (int i = 0; i < allrecords.size(); i++){
+        if(allrecords.at(i)->getNickname()==nombreUsuario){
+            return i;
+        }
+    }
+    cout<<"El usuario no está registrado en el sistema"<<endl;
+    return -1;
+}
 
+void matchesPorUsuarios(Graph grafo, string nombreUsuario){
+    Contenful regs;
+    vector<Registered*> allrecords = regs.getRecords();
+    int index = encontrarIndice(nombreUsuario);
+    for (int i = 0; i < allrecords.size(); i++){
+        if(grafo.checkIfEdgeExistByID(index,i)&&index!=i){
+            cout<<"Oferta"<<endl;
+            cout<<"De :"<<allrecords.at(index)->getNickname()<<"registrado el: "<<allrecords.at(index)->getPostdate()<<" que oferto: "<<allrecords.at(index)->getOffer() <<" a: "<<allrecords.at(i)->getNickname()<<" que pidio: "<<allrecords.at(i)->getDemand()<<endl;
+
+        }
+    }
+    for (int i = 0; i < allrecords.size(); i++){
+        if(grafo.checkIfEdgeExistByID(i,index)&&i!=index){
+            cout<<"Demanda"<<endl;
+            cout<<"De :"<<allrecords.at(i)->getNickname()<<"registrado el: "<<allrecords.at(i)->getPostdate()<<" que oferto: "<<allrecords.at(i)->getOffer() <<" a: "<<allrecords.at(index)->getNickname()<<" que pidio: "<<allrecords.at(index)->getDemand()<<endl;
+        }
+    }
+}
+
+void matchesPorUsuariosHTML(Graph grafo, string nombreUsuario){
+    Contenful regs;
+    vector<Registered*> allrecords = regs.getRecords();
+    ofstream htmlUsuario("matchesPorUsuario.html");
+    htmlUsuario<<"<html><head><title>Matches Por Usuario</title></head><body>"<<endl;
+    htmlUsuario<<"<h2>Matches de: "<<nombreUsuario<<"</h2><br>"<<endl;//Ver si le puedo poner el nombre de usuario
+    htmlUsuario<<"<table>"<<endl;
+    htmlUsuario<<"<tr>"<<endl;
+    htmlUsuario<<"<th>Tipo</th>"<<endl;
+    htmlUsuario<<"<th>De</th>"<<endl;
+    htmlUsuario<<"<th>Fecha de Registro</th>"<<endl;
+    htmlUsuario<<"<th>Oferta</th>"<<endl;
+    htmlUsuario<<"<th>A</th>"<<endl;
+    htmlUsuario<<"<th>Demanda</th>"<<endl;
+    htmlUsuario<<"</tr>"<<endl;
+    int index = encontrarIndice(nombreUsuario);
+    for (int i = 0; i < allrecords.size(); i++){
+        if(grafo.checkIfEdgeExistByID(index,i)&&index!=i){
+
+            htmlUsuario<<"<tr>"<<endl;
+            htmlUsuario<<"<td>"<<"Oferta"<<"</td>"<<endl;
+            htmlUsuario<<"<td>"<<allrecords.at(index)->getNickname()<<"</td>"<<endl;
+            htmlUsuario<<"<td>"<<allrecords.at(index)->getPostdate()<<"</td>"<<endl;
+            htmlUsuario<<"<td>"<<allrecords.at(index)->getOffer()<<"</td>"<<endl;
+            htmlUsuario<<"<td>"<<allrecords.at(i)->getNickname()<<"</td>"<<endl;
+            htmlUsuario<<"<td>"<<allrecords.at(i)->getDemand()<<"</td>"<<endl;
+            htmlUsuario<<"</tr>"<<endl;
+            /*
+            cout<<"Oferta"<<endl;
+            cout<<"De :"<<allrecords.at(index)->getNickname()<<"registrado el: "<<allrecords.at(index)->getPostdate()<<" que oferto: "<<allrecords.at(index)->getOffer() <<" a: "<<allrecords.at(i)->getNickname()<<" que pidio: "<<allrecords.at(i)->getDemand()<<endl;
+            */
+        }
+    }
+    for (int i = 0; i < allrecords.size(); i++){
+        if(grafo.checkIfEdgeExistByID(i,index)&&i!=index){
+            htmlUsuario<<"<tr>"<<endl;
+            htmlUsuario<<"<td>"<<"Demanda"<<"</td>"<<endl;
+            htmlUsuario<<"<td>"<<allrecords.at(i)->getNickname()<<"</td>"<<endl;
+            htmlUsuario<<"<td>"<<allrecords.at(i)->getPostdate()<<"</td>"<<endl;
+            htmlUsuario<<"<td>"<<allrecords.at(i)->getOffer()<<"</td>"<<endl;
+            htmlUsuario<<"<td>"<<allrecords.at(index)->getNickname()<<"</td>"<<endl;
+            htmlUsuario<<"<td>"<<allrecords.at(index)->getDemand()<<"</td>"<<endl;
+            htmlUsuario<<"</tr>"<<endl;
+            /*
+            cout<<"Demanda"<<endl;
+            cout<<"De :"<<allrecords.at(i)->getNickname()<<"registrado el: "<<allrecords.at(i)->getPostdate()<<" que oferto: "<<allrecords.at(i)->getOffer() <<" a: "<<allrecords.at(index)->getNickname()<<" que pidio: "<<allrecords.at(index)->getDemand()<<endl;
+            */
+        }
+    }
+    htmlUsuario<<"</table></body></html>"<<endl;
+    htmlUsuario.close();
+    cout<<"El archivo a sido creado con exito"<<endl;
+}
 int main() {
     Contenful regs;
-    /*
-    //regs.registerUser("badbunny_in_concert", "conciertos a estadio lleno de gente escuchando pum pum con el mismo acorde por 2 horas", "transporte y seguridad en todos los paises que visita y mucha fiesta tambien", "conejo123", 02, 11, 2022);
-    vector<Registered*> allrecords = regs.getRecords();
-    for (int i = 0; i < allrecords.size(); i++)
-    {
-        cout << "Usuario"<<endl;
-        cout << allrecords.at(i)->getNickname() << endl;
-        cout << allrecords.at(i)->getDemand() << endl;
-        cout << allrecords.at(i)->getOffer() << endl;
-        cout << allrecords.at(i)->getPostdate() << endl;
-        cout << "*********************************" << endl;
-    }
-    */
     int opcion;
     bool repetir = true;
     
     do {
         
-        
+        cout << "\nGOBIZ" << endl;
         cout << "\n\nMenu de Opciones" << endl;
         cout << "1. Registrar Usuario" << endl;
         cout << "2. Crear Matches" << endl;
-        cout << "3. Opcion 3" << endl;
+        cout << "3. Consultar Matches por Usuario" << endl;
         cout << "4. Opcion 4" << endl;
         cout << "5. Ver todos los registros" << endl;
         cout << "6. Ver grafo de matches" << endl;
@@ -342,13 +399,13 @@ int main() {
                 matching();
                 break; 
                     
-            case 3:{              
-                
-                           
-                
-                break;
+            case 3:{
+                string nombreUsu;
+                cout << "\nIngrese el nombre del usuario a consultar: ";
+                cin >> nombreUsu;
+                matchesPorUsuariosHTML(grafoRelaciones,nombreUsu);
                 }          
-                
+                break;
                 
             case 4:               
                 
@@ -394,8 +451,11 @@ int main() {
                 }
                 break;
             
-            case 6:
+            case 6:{
                 grafoRelaciones.printGraph();
+                //grafoRelaciones.getAllNeigborsByID(28);
+                }
+                break;
             case 0:
             	repetir = false;
             	break;
